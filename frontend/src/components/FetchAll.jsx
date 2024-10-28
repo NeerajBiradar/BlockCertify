@@ -29,7 +29,7 @@ function FetchAll() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center">
+    <div className="flex flex-col items-center justify-center mt-20">
       <h2 className="text-4xl font-bold text-white mb-4">Fetch Certificate</h2>
       <form onSubmit={handleSubmit} className="bg-[#060B0F] p-8 rounded-xl border border-white">
         <div className="mb-4">
