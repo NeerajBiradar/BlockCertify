@@ -1,162 +1,125 @@
-import { ConnectButton ,useActiveAccount} from "thirdweb/react";
+import { ConnectButton, useActiveAccount } from "thirdweb/react";
 import { client } from "../client";
 import React, { useState } from "react";
 import { getContract } from "thirdweb";
 import { defineChain } from "thirdweb/chains";
 import { prepareContractCall } from "thirdweb"
 import { useSendTransaction } from "thirdweb/react"
-import axios from 'axios'; // Add this import
+
 
 const contract = getContract({
   client,
   chain: defineChain(59141),
-  address: "0x2F3B0F36217d311192d8678D2c627302852259FC"
+  address: "0x094542EB1E269915Afd5e924001B2eDfe7d633A0"
 });
 
 function Generate() {
   const account = useActiveAccount();
-  let [email,setEmail] = useState("");
-  let [_certificate_id, setCertificateId] = useState("");
-  let [_rollNo, setrollNo] = useState("");
-  let [_name, setName] = useState("");
-  let [_course_name, setCourseName] = useState("");
-  let [_org_name, setOrgName] = useState("");
+
+  let [signature, setSignature] = useState("");
+  let [stname, setStname] = useState("");
+  let [studentID, setStudentID] = useState("");
+  let [course, setCourse] = useState("");
+  let [organization, setOrganization] = useState("");
+  let [dateOfIssue, setDateofIssue] = useState("");
+  let [title, setTitle] = useState("");
 
   const { mutate: sendTransaction } = useSendTransaction();
 
-  const generateUniqueCertificateId = (roll, name, course, organization) => {
-    // Create a string by concatenating all inputs
-    const baseString = `${roll}${name}${course}${organization}`;
-    
-    // Generate a hash using a simple algorithm (you might want to use a more robust method in production)
-    let hash = 0;
-    for (let i = 0; i < baseString.length; i++) {
-      const char = baseString.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32-bit integer
-    }
-    
-    // Convert the hash to a hexadecimal string and take the first 8 characters
-    const uniqueId = Math.abs(hash).toString(16).slice(0, 8).toUpperCase();
-    
-    // Add a prefix to make it clear this is a certificate ID
-    return `CERT-${uniqueId}`;
-  };
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Prevent default form submission
 
-  const handleSubmit = async () => {
+    // Check if all fields are filled
+    if (!signature || !stname || !studentID || !course || !organization || !dateOfIssue || !title) {
+      alert("Please fill in all fields before generating the certificate.");
+      return; // Exit the function if any field is empty
+    }
     // Generate the unique certificate ID
-    const uniqueCertificateId = generateUniqueCertificateId(_rollNo, _name, _course_name, _org_name);
-    console.log(uniqueCertificateId);
+    const transaction = prepareContractCall({
+      contract,
+      method: "function issueCertificate(string signature, string name, string studentID, string course, string organization, string dateOfIssue, string title) returns ((string certificateID, string name, string studentID, string course, string organization, string dateOfIssue, string title))",
+      params: [signature, stname, studentID, course, organization, dateOfIssue, title]
+    });
+    sendTransaction(transaction); // Wait for the transaction to complete
 
-    try {
-      // Send data to the backend
-      await axios.post('http://localhost:3000/api/generate', {
-        email: email,
-        certificateId: uniqueCertificateId
-      });
-
-      // Prepare and send the blockchain transaction
-      const transaction = prepareContractCall({
-        contract,
-        method: "function generateCertificate(string _certificate_id, string _rollNo, string _name, string _course_name, string _org_name)",
-        params: [uniqueCertificateId, _rollNo.toUpperCase(), _name.toUpperCase(), _course_name.toUpperCase(), _org_name.toUpperCase()]
-      });
-      console.log(transaction);
-      sendTransaction(transaction);
-
-      // Clear form fields after successful submission
-      setEmail("");
-      setCertificateId("");
-      setrollNo("");
-      setName("");
-      setCourseName("");
-      setOrgName("");
-
-    } catch (error) {
-      console.error("Error generating certificate:", error);
-      alert("Error generating certificate. Please try again.");
-    }
+    // Clear all fields after transaction
+    setSignature("");
+    setStname("");
+    setStudentID("");
+    setCourse("");
+    setOrganization("");
+    setDateofIssue("");
+    setTitle("");
   };
 
   return (
-
-    <div className="flex flex-col items-center mt-20 min-h-screen bg-[#060B0F]">
-      <h2 className="text-4xl font-bold text-white mb-8">Generate Certificate</h2>
-      <form className="bg-[#0A0E12] p-8 rounded-xl border border-white w-full max-w-md">
-        <div className="mb-4">
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-white bg-[#1A1E24] leading-tight focus:outline-none focus:shadow-outline"
-            id="certificate_id"
-            type="email"
-            placeholder="Email Id"
-            value={email}
-            onChange={(e) => setEmail(e.target.value.toUpperCase())}
-          />
-        </div>
-        <div className="mb-4">
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-white bg-[#1A1E24] leading-tight focus:outline-none focus:shadow-outline"
-            id="uid"
-            type="text"
-            placeholder="Unique Identity"
-            value={_rollNo}
-            onChange={(e) => setrollNo(e.target.value.toUpperCase())}
-          />
-        </div>
-        <div className="mb-4">
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-white bg-[#1A1E24] leading-tight focus:outline-none focus:shadow-outline"
-            id="_name"
-            type="text"
-            placeholder="Name"
-            value={_name}
-            onChange={(e) => setName(e.target.value.toUpperCase())}
-          />
-        </div>
-        <div className="mb-4">
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-white bg-[#1A1E24] leading-tight focus:outline-none focus:shadow-outline"
-            id="course_name"
-            type="text"
-            placeholder="Course Name"
-            value={_course_name}
-            onChange={(e) => setCourseName(e.target.value.toUpperCase())}
-          />
-        </div>
-        <div className="mb-6">
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-white bg-[#1A1E24] leading-tight focus:outline-none focus:shadow-outline"
-            id="org_name"
-            type="text"
-            placeholder="Organization Name"
-            value={_org_name}
-            onChange={(e) => setOrgName(e.target.value.toUpperCase())}
-          />
-        </div>
-        <div className="flex mb-6">
-          <ConnectButton
-            client={client}
-            appMetadata={{
-              name: "Certificate",
-              url: "localhost",
-            }}
-          />
-        </div>
-
-        {account && <div className="flex items-center">
-
+    <div
+      className="flex flex-col items-center justify-center mt-20 px-4 sm:px-6 lg:px-8"
+      style={{ backgroundColor: "#060B0F", minHeight: "100vh" }}
+    >
+      <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4 ">
+        Generate Certificate
+      </h2>
+      <form
+        className="bg-[#060B0F] p-6 sm:p-8 rounded-xl w-full max-w-md shadow-lg"
+        onSubmit={handleSubmit}
+      >
+        {[
+          "email",
+          "uid",
+          "candidate_name",
+          "course_name",
+          "org_name",
+          "date_of_issue",
+          "title"
+        ].map((field, index) => (
+          <div className="mb-4" key={index}>
+            <label
+              className="block text-white text-sm font-bold mb-2"
+              htmlFor={field}
+            >
+              {field
+                .replace(/_/g, " ")
+                .replace(/\b\w/g, (char) => char.toUpperCase())}
+            </label>
+            <input
+              name={field}
+              value={field === "email" ? signature :
+                field === "uid" ? studentID  :
+                  field === "candidate_name" ? stname:
+                    field === "course_name" ? course :
+                      field === "org_name" ? organization :
+                        field === "date_of_issue" ? dateOfIssue :
+                          field === "title" ? title : ""}
+              onChange={(e) => {
+                if (field === "email") setSignature(e.target.value.toUpperCase());
+                else if (field === "uid") setStudentID(e.target.value.toUpperCase());
+                else if (field === "candidate_name") setStname(e.target.value.toUpperCase());
+                else if (field === "course_name") setCourse(e.target.value.toUpperCase());
+                else if (field === "org_name") setOrganization(e.target.value.toUpperCase());
+                else if (field === "date_of_issue") setDateofIssue(e.target.value.toUpperCase());
+                else if (field === "title") setTitle(e.target.value.toUpperCase());
+              }}
+              type={field === "date_of_issue" ? "date" : "text"}
+              className="shadow appearance-none rounded-xl w-full py-2 px-3 text-white leading-tight focus:outline-none focus:shadow-outline bg-[#ffffff1a] backdrop-blur-md border-white transition-transform transform hover:scale-105 focus:ring-2 focus:ring-[#94a3ad]"
+              placeholder={field
+                .replace(/_/g, " ")
+                .replace(/\b\w/g, (char) => char.toUpperCase())}
+              required
+            />
+          </div>
+        ))}
+        <ConnectButton client={client} />
+        <div className="flex items-center justify-center">
           <button
-            className="bg-gray-700 hover:bg-gray-900 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="button"
-            onClick={handleSubmit}
+            className="bg-[#202d37] hover:text-[#202d37] hover:bg-[#94a3ad] text-white py-2 px-4 mt-2 rounded-xl focus:outline-none focus:shadow-outline w-full transition-transform transform hover:scale-105"
+            type="submit"
           >
-            Generate
+            Generate Certificate
           </button>
-
-        </div>}
+        </div>
       </form>
     </div>
-
   );
 }
 

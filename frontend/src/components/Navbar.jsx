@@ -1,14 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import LoginForm from "./LoginForm";
 
 function Navbar() {
-  const [showLoginForm, setShowLoginForm] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const handleLoginClick = () => {
-    setShowLoginForm(true);
-  };
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -16,20 +10,7 @@ function Navbar() {
 
   return (
     <nav className="w-full bg-[#060B0F] py-4">
-      <div className="container mx-auto px-4 flex justify-between items-center">
-        <div className="text-xl font-bold text-white">
-          <svg
-            width="40"
-            height="40"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <rect width="24" height="24" fill="white" />
-            <path d="M12 2L2 7v10l10 5 10-5V7L12 2z" fill="#000" />
-          </svg>
-        </div>
-        
+      <div className="container mx-auto px-4 flex items-center">
         {/* Hamburger menu for mobile */}
         <div className="md:hidden">
           <button onClick={toggleMenu} className="text-white">
@@ -39,20 +20,26 @@ function Navbar() {
           </button>
         </div>
 
-        {/* Desktop menu */}
-        <div className="hidden md:flex flex-1 justify-center space-x-16">
+        {/* Spacer for centered links */}
+        <div className="flex-grow" />
+
+        {/* Desktop menu centered */}
+        <div className="hidden md:flex justify-center space-x-16 flex-grow-0">
           <Link to="/" className="text-white text-lg">Home</Link>
           <Link to="/fetch" className="text-white text-lg">Fetch All</Link>
           <Link to="/generate" className="text-white text-lg">Generate</Link>
           <Link to="/about" className="text-white text-lg">About Us</Link>
         </div>
 
-        {/* Desktop buttons */}
+        {/* Spacer to push buttons to the right */}
+        <div className="flex-grow" />
+
+        {/* Desktop buttons on the right */}
         <div className="hidden md:flex space-x-4">
-          <Link to="/signup" className="bg-[#060B0F] text-white py-2 px-4 rounded-xl border border-white hover:bg-blue-700">
+          <Link to="/signup" className="bg-[#202d37] hover:bg-[#94a3ad] hover:text-[#202d37] text-white py-2 px-4 rounded-xl">
             Sign Up
           </Link>
-          <Link to="/login" className="bg-[#060B0F] text-white py-2 px-4 rounded-xl border border-white hover:bg-blue-700" onClick={handleLoginClick}>
+          <Link to="/login" className="bg-[#202d37] hover:bg-[#94a3ad] hover:text-[#202d37] text-white py-2 px-4 rounded-xl">
             Login
           </Link>
         </div>
@@ -67,16 +54,8 @@ function Navbar() {
             <Link to="/generate" className="text-white block px-3 py-2 text-base font-medium">Generate</Link>
             <Link to="/about" className="text-white block px-3 py-2 text-base font-medium">About Us</Link>
           </div>
-          <div className="pt-4 pb-3 border-t border-gray-700">
-            <div className="flex items-center px-5">
-              <Link to="/signup" className="block px-3 py-2 text-base font-medium text-white hover:bg-gray-700">Sign Up</Link>
-              <Link to="/login" className="block px-3 py-2 text-base font-medium text-white hover:bg-gray-700" onClick={handleLoginClick}>Login</Link>
-            </div>
-          </div>
         </div>
       )}
-      
-      {/* {showLoginForm && <LoginForm />} */}
     </nav>
   );
 }
